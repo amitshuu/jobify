@@ -1,5 +1,5 @@
 import User from '../models/User.js';
-import { BadRequestError } from '../errors/index.js';
+import { BadRequestError, UnAutonticatedError } from '../errors/index.js';
 
 const register = async (req, res) => {
   const { name, email, password, lastName } = req.body;
@@ -9,7 +9,7 @@ const register = async (req, res) => {
   }
   const existUser = await User.findOne({ email });
   if (existUser) {
-    throw new BadRequestError('User is already exist!');
+    throw new BadRequestError('Email is already in use');
   }
   const user = await User.create({ name, email, password, lastName });
   const token = user.createJWT();
@@ -25,8 +25,25 @@ const register = async (req, res) => {
   });
 };
 
-const login = (req, res) => {
-  res.send('Login');
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new BadRequestError('Please provide all values');
+  }
+  const user = await User.findOne({ email }).select('+password');
+  if (!user) {
+    throw new UnAutonticatedError('Invalid Credentials');
+  }
+  const isCorrect = await user.comparePassword(password);
+
+  if (!isCorrect) {
+    throw new UnAutonticatedError('Invalid Credentials');
+  }
+
+  const token = user.createJWT();
+  user.password = undefined;
+  res.status(200).json({ user, token });
 };
 
 const updateUser = (req, res) => {
