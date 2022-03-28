@@ -1,13 +1,14 @@
 import {
   CLEAR_ALERT,
   DISPLAY_ALERT,
-  LOGIN_USER_BEGIN,
-  LOGIN_USER_ERROR,
-  LOGIN_USER_SUCCESS,
-  REGISTER_USER_BEGIN,
-  REGISTER_USER_ERROR,
-  REGISTER_USER_SUCCESS,
+  LOGOUT_USER,
+  SETUP_USER_BEGIN,
+  SETUP_USER_ERROR,
+  SETUP_USER_SUCCESS,
+  TOGGLE_SIDEBAR,
 } from './actions';
+
+import { initialState } from './appContext';
 
 const reducer = (state, action) => {
   if (action.type === DISPLAY_ALERT) {
@@ -28,39 +29,11 @@ const reducer = (state, action) => {
     };
   }
 
-  if (action.type === REGISTER_USER_BEGIN) {
+  if (action.type === SETUP_USER_BEGIN) {
     return { ...state, isLoading: true };
   }
 
-  if (action.type === REGISTER_USER_SUCCESS) {
-    return {
-      ...state,
-      isLoading: false,
-      user: action.payload.user,
-      token: action.payload.token,
-      userLocation: action.payload.location,
-      jobLotion: action.payload.location,
-      showAlert: true,
-      alertType: 'success',
-      alertMsg: 'User Created! Redirecting...',
-    };
-  }
-
-  if (action.type === REGISTER_USER_ERROR) {
-    return {
-      ...state,
-      isLoading: false,
-      showAlert: true,
-      alertType: 'danger',
-      alertMsg: action.payload.msg,
-    };
-  }
-
-  if (action.type === LOGIN_USER_BEGIN) {
-    return { ...state, isLoading: true };
-  }
-
-  if (action.type === LOGIN_USER_SUCCESS) {
+  if (action.type === SETUP_USER_SUCCESS) {
     return {
       ...state,
       isLoading: false,
@@ -70,17 +43,30 @@ const reducer = (state, action) => {
       jobLocation: action.payload.location,
       showAlert: true,
       alertType: 'success',
-      alertMsg: 'Logged in succesfully, Redirecting...',
+      alertMsg: action.payload.alertText,
     };
   }
 
-  if (action.type === LOGIN_USER_ERROR) {
+  if (action.type === SETUP_USER_ERROR) {
     return {
       ...state,
       isLoading: false,
       showAlert: true,
       alertType: 'danger',
       alertMsg: action.payload.msg,
+    };
+  }
+
+  if (action.type === TOGGLE_SIDEBAR) {
+    return { ...state, showSidebar: !state.showSidebar };
+  }
+  if (action.type === LOGOUT_USER) {
+    return {
+      ...initialState,
+      user: null,
+      token: null,
+      jobLoaction: '',
+      location: '',
     };
   }
   throw new Error(`no such action: ${action.type}`);
