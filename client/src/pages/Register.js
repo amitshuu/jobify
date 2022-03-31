@@ -83,7 +83,7 @@ const Register = () => {
           name='password'
         />
 
-        <button className='btn btn-block' disabled={isLoading}>
+        <button className='btn btn-block' disabled={isLoading || showAlert}>
           submit
         </button>
         <p>
