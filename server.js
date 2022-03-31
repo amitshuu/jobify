@@ -8,6 +8,7 @@ import connectDB from './db/connect.js';
 //Middleware
 import notFoundMiddleware from './middleware/not-found.js';
 import errorHandlerMiddleware from './middleware/error-handler.js';
+import authenticateUser from './middleware/auth.js';
 //Routes
 import authRoutes from './routes/authRoutes.js';
 import jobRoutes from './routes/jobRoutes.js';
@@ -28,7 +29,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/jobs', jobRoutes);
+app.use('/api/v1/jobs', authenticateUser, jobRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
