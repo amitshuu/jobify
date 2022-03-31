@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useReducer, useState } from 'react';
+import React, { useContext, useEffect, useReducer } from 'react';
 import {
   CLEAR_ALERT,
   DISPLAY_ALERT,
@@ -7,6 +7,9 @@ import {
   SETUP_USER_ERROR,
   SETUP_USER_SUCCESS,
   TOGGLE_SIDEBAR,
+  UPDATE_USER_BEGIN,
+  UPDATE_USER_ERROR,
+  UPDATE_USER_SUCCESS,
 } from './actions';
 import reducer from './reducer';
 import axios from 'axios';
@@ -30,6 +33,13 @@ export const initialState = {
 
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  const authFetch = axios.create({
+    baseURL: '/api/v1/',
+    headers: {
+      Authorization: `Bearer ${state.token}`,
+    },
+  });
 
   const displayAlert = () => {
     dispatch({ type: DISPLAY_ALERT });
@@ -77,6 +87,28 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const updateUser = async (currentUser) => {
+    dispatch({ type: UPDATE_USER_BEGIN });
+    try {
+      const { data } = await authFetch.patch('auth/updateUser', currentUser);
+      const { user, location, token } = data;
+      dispatch({
+        type: UPDATE_USER_SUCCESS,
+        payload: { user, location, token },
+      });
+      addUserToLocalStorage({ user, token, location });
+    } catch (error) {
+      if (error.response.status === 401) {
+        logoutUser();
+      } else {
+        dispatch({
+          type: UPDATE_USER_ERROR,
+          payload: { msg: error.response.data.msg },
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => {
       dispatch({ type: CLEAR_ALERT });
@@ -90,6 +122,7 @@ export const AppProvider = ({ children }) => {
         setupUser,
         toggleSidebar,
         logoutUser,
+        updateUser,
       }}
     >
       {children}
