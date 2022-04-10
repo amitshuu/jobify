@@ -1,20 +1,95 @@
 import BadRequestError from '../errors/bad-request.js';
+import NotFoundError from '../errors/not-found.js';
 import Job from '../models/Job.js';
+import checkPermissions from '../utils/checkPermissions.js';
+import mongoose from 'mongoose';
+import moment from 'moment';
 
-const getAllJobs = (req, res) => {
-  res.send('Get all jobs');
+const getAllJobs = async (req, res) => {
+  const jobs = await Job.find({ createdBy: req.user.userId });
+  res.status(200).json({ jobs, totalJobs: jobs.length, numOfPages: 1 });
 };
 
-const updateJob = (req, res) => {
-  res.send('Update job');
+const updateJob = async (req, res) => {
+  const { id: jobId } = req.params;
+  const { company, position } = req.body;
+
+  if (!company || !position) {
+    throw new BadRequestError('Please provide all values!');
+  }
+
+  const job = await Job.findOne({ _id: jobId });
+
+  if (!job) {
+    throw new NotFoundError(`Job with the id ${jobId} was not found!`);
+  }
+
+  checkPermissions(req.user, job.createdBy);
+  const updatedJob = await Job.findOneAndUpdate({ _id: jobId }, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({ updatedJob });
 };
 
-const deleteJob = (req, res) => {
-  res.send('Delete job');
+const deleteJob = async (req, res) => {
+  const { id: jobId } = req.params;
+  const job = await Job.findOne({ _id: jobId });
+
+  if (!job) {
+    throw new NotFoundError(`Job with the id ${jobId} was not found!`);
+  }
+  checkPermissions(req.user, job.createdBy);
+
+  await job.remove();
+  res.status(200).json({ msg: 'Success! job removed!' });
 };
 
-const showStats = (req, res) => {
-  res.send('Show stats');
+const showStats = async (req, res) => {
+  let stats = await Job.aggregate([
+    { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+    { $group: { _id: '$status', count: { $sum: 1 } } },
+  ]);
+
+  stats = stats.reduce((acc, curr) => {
+    const { _id: title, count } = curr;
+    acc[title] = count;
+    return acc;
+  }, {});
+
+  const defaultStats = {
+    pending: stats.pending || 0,
+    interview: stats.interview || 0,
+    declined: stats.declined || 0,
+  };
+
+  let monthlyApplications = await Job.aggregate([
+    { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': -1, '_id.month': -1 } },
+    { $limit: 6 },
+  ]);
+  monthlyApplications = monthlyApplications.map((item) => {
+    const {
+      _id: { month, year },
+      count,
+    } = item;
+    const date = moment()
+      .month(month - 1)
+      .year(year)
+      .format('MMM Y');
+    return { date, count };
+  });
+  res.status(200).json({ defaultStats, monthlyApplications });
 };
 
 const createJob = async (req, res) => {
