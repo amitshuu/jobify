@@ -2,7 +2,7 @@ import User from '../models/User.js';
 import { BadRequestError, UnAutonticatedError } from '../errors/index.js';
 
 const register = async (req, res) => {
-  const { name, email, password, lastName } = req.body;
+  const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
     throw new BadRequestError('Please provide all values!');
@@ -11,13 +11,13 @@ const register = async (req, res) => {
   if (existUser) {
     throw new BadRequestError('Email is already in use');
   }
-  const user = await User.create({ name, email, password, lastName });
+  const user = await User.create({ name, email, password });
   const token = user.createJWT();
   res.status(201).json({
     user: {
-      name,
-      email,
-      lastName,
+      name: user.name,
+      email: user.email,
+      lastName: user.lastName,
       location: user.location,
     },
     token,
@@ -51,7 +51,7 @@ const updateUser = async (req, res) => {
   if (!email || !lastName || !location || !name) {
     throw new BadRequestError('Please provide all values');
   }
-  const user = await User.findOne({ id: req.user.userId });
+  const user = await User.findOne({ _id: req.user.userId });
   user.email = email;
   user.name = name;
   user.location = location;
