@@ -1,7 +1,7 @@
 const errorHandlerMiddleware = (err, req, res, next) => {
   const defaultError = {
     statusCode: err.statusCode || 500,
-    msg: err.message,
+    msg: err.message || 'Something went wrong, try again later',
   };
   if (err.name === 'ValidationError') {
     defaultError.statusCode = 400;
