@@ -10,9 +10,11 @@ import JobsContainer from './JobsContainer';
 import Jobs from './Jobs';
 import StatsContainer from './StatsContainer';
 import ChartsContainer from './ChartsContainer';
+import PageBtnContainer from './PageBtnContainer';
 export {
   Logo,
   StatsContainer,
+  PageBtnContainer,
   ChartsContainer,
   FormRow,
   Alert,
