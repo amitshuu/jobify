@@ -49,13 +49,10 @@ app.get('*', (req, res) => {
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
-
-const PORT = process.env.PORT || 4000;
-
 const start = async () => {
   try {
     await connectDB(process.env.MONGO_URL);
-    app.listen(PORT, () => {
+    app.listen(process.env.PORT || 4000, () => {
       console.log(`Server is up on port ${PORT}`);
     });
   } catch (error) {
