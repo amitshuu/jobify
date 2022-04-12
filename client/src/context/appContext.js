@@ -1,6 +1,8 @@
 import React, { useContext, useReducer } from 'react';
 import {
+  CHANGE_PAGE,
   CLEAR_ALERT,
+  CLEAR_FILTERS,
   CLEAR_VALUES,
   CREATE_JOB_BEGIN,
   CREATE_JOB_ERROR,
@@ -41,7 +43,7 @@ export const initialState = {
   user: user ? JSON.parse(user) : null,
   token: token,
   userLocation: userLocation || '',
-  showSidebar: true,
+  showSidebar: false,
   jobLocation: userLocation || '',
   isEditing: false,
   editJobId: '',
@@ -52,6 +54,11 @@ export const initialState = {
   statusOptions: ['interview', 'declined', 'pending'],
   status: 'pending',
   jobs: [],
+  search: '',
+  searchStatus: 'all',
+  searchType: 'all',
+  sort: 'latest',
+  sortOptions: ['latest', 'oldest', 'a-z', 'z-a'],
   totalJobs: 0,
   numOfPages: 1,
   monthlyApplications: [],
@@ -69,6 +76,10 @@ export const AppProvider = ({ children }) => {
     },
   });
 
+  const changePage = (page) => {
+    dispatch({ type: CHANGE_PAGE, payload: { page } });
+  };
+
   const displayAlert = () => {
     dispatch({ type: DISPLAY_ALERT });
   };
@@ -80,6 +91,10 @@ export const AppProvider = ({ children }) => {
 
   const toggleSidebar = () => {
     dispatch({ type: TOGGLE_SIDEBAR });
+  };
+
+  const clearFilters = () => {
+    dispatch({ type: CLEAR_FILTERS });
   };
 
   const addUserToLocalStorage = ({ user, token, location }) => {
@@ -174,7 +189,11 @@ export const AppProvider = ({ children }) => {
   };
 
   const getJobs = async () => {
-    let url = 'jobs';
+    const { searchStatus, searchType, search, sort, page } = state;
+    let url = `jobs?page=${page}&status=${searchStatus}&jobType=${searchType}&sort=${sort}`;
+    if (search) {
+      url = url + `&search=${search}`;
+    }
     dispatch({ type: GET_JOBS_BRGIN });
     try {
       const { data } = await authFetch.get(url);
@@ -258,8 +277,10 @@ export const AppProvider = ({ children }) => {
         getJobs,
         clearAlert,
         setEditJob,
+        changePage,
         deleteJob,
         showStats,
+        clearFilters,
         editJob,
       }}
     >
