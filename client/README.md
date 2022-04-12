@@ -1,6 +1,6 @@
 # Job Tracking App
 
-Web app built during a coruse with the MERN stack.
+<Web app built during a coruse with the MERN stack.
 
 This project done by the course: https://www.udemy.com/course/mern-stack-course-mongodb-express-react-and-nodejs/
 
