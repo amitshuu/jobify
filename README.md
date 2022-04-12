@@ -7,7 +7,7 @@ This project done by the course: https://www.udemy.com/course/mern-stack-course-
 ![screenshot](https://github.com/amitshuu/jobify/blob/master/uploads/Jobify_Dashboard.png)
 ![screenshot](https://github.com/amitshuu/jobify/blob/master/uploads/Jobify_AllJobs.png)
 
-#Features
+# Features
 
 - User member (regiser/login)
 - User profile update
