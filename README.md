@@ -45,3 +45,12 @@ npm run dev
 Run backend only
 npm run server
 ```
+
+### Dummy Data 
+```
+Navigate to seeder.js
+Change all createdBy to your user ID (can find it in local storage or devtools components->context)
+Exit server
+Run in terminal : node seeder.js
+Run the server again.
+```
